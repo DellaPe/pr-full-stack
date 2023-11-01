@@ -1,6 +1,8 @@
 import net from 'node:net'
 import fs from 'node:fs/promises'
 
+const CODING = 'utf8'
+
 /*
 EJERCICIO 1
 1) Primero ver parametros, antes de hacer nada. Este caso lo presentaba ya que que el callBack usaba 2 parametros.
@@ -62,7 +64,7 @@ EJERCICIO 3
 3) Pasamos a promesa.
 */
 export async function procesarArchivo () {
-  const contenido = await fs.readFile('input.txt', 'utf8')
+  const contenido = await fs.readFile('input.txt', CODING)
     .catch((error) => {
       console.error('Error leyendo archivo:', error.message)
       throw error
@@ -97,7 +99,64 @@ export async function procesarArchivo () {
   //   fs.writeFile('output.txt', textoProcesado, handleWrite)
   // }
 
-  // fs.readFile('input.txt', 'utf8', handleRead)
+  // fs.readFile('input.txt', CODING, handleRead)
 }
 
 await procesarArchivo()
+
+/*
+EJERCICIO 4
+1) Pasar a una sola promesa varias promesas.
+2) Fin: optimazar el tiempo de ejecucion ya que si lo hacemos sincrono por cada readFile se espera a que este resulto y traba el proceso.
+Paralelo ya que no dependes de la respuesta de la anterior.
+*/
+
+export async function leerArchivos() {
+  // Mia
+  // const archivo1 = fs.readFile('archivo1.txt', CODING)
+  // const archivo2 = fs.readFile('archivo2.txt', CODING)
+  // const archivo3 = fs.readFile('archivo3.txt', CODING)
+  // Promise.all([archivo1, archivo2, archivo3])
+  //   .then((data) => console.log(`Promise all: ${data[0]} ${data[1]} ${data[2]}`)) 
+  //   .catch((error) => console.error(error))
+
+  // Forma 1 (midu) Si falla una fallan todas
+  // const [archivo1, archivo2, archivo3] = await Promise.all([
+  //   fs.readFile('archivo1.txt', CODING),
+  //   fs.readFile('archivo2.txt', CODING),
+  //   fs.readFile('archivo3.txt', CODING)
+  // ]).catch((error) => console.error(error))
+  // console.log(`Promise all: ${archivo1} ${archivo2} ${archivo3}`)
+
+  // Forma 2 (midu) Si falla una no fallan todas
+  const [archivo1, archivo2, archivo3] = await Promise.allSettled([
+    fs.readFile('archivo1.txt', CODING),
+    fs.readFile('archivo2.txt', CODING),
+    fs.readFile('archivo3.txt', CODING)
+  ]).catch((error) => console.error(error))
+  console.log(`Promise all: ${archivo1.value} ${archivo2.value} ${archivo3.value}`)
+  return `Promise all: ${archivo1.value} ${archivo2.value} ${archivo3.value}`
+}
+
+await leerArchivos()
+
+/*
+EJERCICIO 5
+*/
+export async function delay (time) {
+  return new Promise((resolve) => {
+    // setTimeout(() => {
+    //   resolve()
+    // }, time)
+    setTimeout(resolve, time)
+  })
+}
+
+/*
+EJERCICIO 6
+*/
+import { dotenv } from './dotenv.js'
+dotenv.config("./config/.env.local")
+
+console.log(process.env.PORT) // "8008"
+console.log(process.env.TOKEN) // "123abc"
